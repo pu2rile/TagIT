@@ -27,7 +27,7 @@ public class Note {
 
     private boolean pinned;
 
-    private String imageUrl;
+    private String imgUrl;
 
     private LocalDateTime createdAt;
 
@@ -39,12 +39,12 @@ public class Note {
     private Set<NoteTag> noteTags = new HashSet<>();
 
     @Builder
-    public Note(User user, String title, String content, boolean pinned, String imageUrl) {
+    public Note(User user, String title, String content, boolean pinned, String imgUrl) {
         this.user = user;
         this.title = title;
         this.content = content;
         this.pinned = pinned;
-        this.imageUrl = imageUrl;
+        this.imgUrl = this.imgUrl;
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
         this.lastOpenedAt = LocalDateTime.now();
