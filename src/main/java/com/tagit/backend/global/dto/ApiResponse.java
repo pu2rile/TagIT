@@ -14,7 +14,7 @@ public class ApiResponse<T> {
         return new ApiResponse<>(true, data, "요청이 성공적으로 처리되었습니다.");
     }
 
-    public static <T> ApiResponse<T> failure(String message) {
-        return new ApiResponse<>(false, null, message);
+    public static <T> ApiResponse<T> failure(String errorCode, String message) {
+        return new ApiResponse<>(false, null, "[" + errorCode + "] " + message);
     }
 }
