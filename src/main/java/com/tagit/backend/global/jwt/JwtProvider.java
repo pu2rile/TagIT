@@ -32,11 +32,25 @@ public class JwtProvider {
                 .compact();
     }
 
-    public Claims parseClaims(String token) {
-        return Jwts.parserBuilder()
+    public boolean validateToken(String token) {
+        try {
+            Jwts.parserBuilder()
+                    .setSigningKey(secretKey.getBytes())
+                    .build()
+                    .parseClaimsJws(token);
+            return true;
+        } catch (JwtException | IllegalArgumentException e) {
+            return false;
+        }
+    }
+
+    public Long getUserId(String token) {
+        Claims claims = Jwts.parserBuilder()
                 .setSigningKey(secretKey.getBytes())
                 .build()
                 .parseClaimsJws(token)
                 .getBody();
+
+        return Long.parseLong(claims.getSubject());
     }
 }
