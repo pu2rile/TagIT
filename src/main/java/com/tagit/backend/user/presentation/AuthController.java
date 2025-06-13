@@ -73,4 +73,13 @@ public class AuthController {
 
         return ResponseEntity.ok(newAccessToken);
     }
+
+    @PostMapping("/logout")
+    public ResponseEntity<Void> logout(@AuthenticationPrincipal Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ApiException(AuthErrorCode.USER_NOT_FOUND));
+        user.clearRefreshToken();
+        userRepository.save(user);
+        return ResponseEntity.ok().build();
+    }
 }
