@@ -2,6 +2,7 @@ package com.tagit.backend.note.presentation;
 
 import com.tagit.backend.global.dto.ApiResponse;
 import com.tagit.backend.note.application.NoteService;
+import com.tagit.backend.note.dto.NoteDetail;
 import com.tagit.backend.note.dto.NoteInfo;
 import com.tagit.backend.note.dto.NoteResponse;
 import lombok.RequiredArgsConstructor;
@@ -36,11 +37,11 @@ public class NoteController {
     }
 
     @GetMapping("/{noteId}")
-    public ResponseEntity<ApiResponse<NoteResponse>> getNoteById(
+    public ResponseEntity<ApiResponse<NoteDetail>> getNoteById(
             @AuthenticationPrincipal Long userId,
             @PathVariable Long noteId
     ) {
-        NoteResponse response = noteService.getNoteById(userId, noteId);
+        NoteDetail response = noteService.getNoteById(userId, noteId);
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 }

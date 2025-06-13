@@ -3,6 +3,7 @@ package com.tagit.backend.note.application;
 import com.tagit.backend.global.exception.ApiException;
 import com.tagit.backend.note.domain.entity.Note;
 import com.tagit.backend.note.domain.repository.NoteRepository;
+import com.tagit.backend.note.dto.NoteDetail;
 import com.tagit.backend.note.dto.NoteInfo;
 import com.tagit.backend.note.dto.NoteResponse;
 import com.tagit.backend.tag.domain.entity.Tag;
@@ -71,16 +72,14 @@ public class NoteService {
                 //note.getTitle(),
                 note.getContent(),
                 note.isPinned(),
-                note.getImgUrl(),
                 note.getCreatedAt(),
                 note.getUpdatedAt(),
-                note.getLastOpenedAt(),
-                tagInfos
+                note.getLastOpenedAt()
         );
     }
 
     @Transactional(readOnly = true)
-    public NoteResponse getNoteById(Long userId, Long noteId) {
+    public NoteDetail getNoteById(Long userId, Long noteId) {
         Note note = noteRepository.findByIdAndUserId(noteId, userId)
                 .orElseThrow(() -> new ApiException(NoteErrorCode.NOTE_NOT_FOUND));
 
@@ -88,16 +87,6 @@ public class NoteService {
                 .map(nt -> TagInfo.from(nt.getTag()))
                 .toList();
 
-        return NoteResponse.builder()
-                .id(note.getId())
-                //.title(note.getTitle())
-                .content(note.getContent())
-                .pinned(note.isPinned())
-                .imageUrl(note.getImgUrl())
-                .createdAt(note.getCreatedAt())
-                .updatedAt(note.getUpdatedAt())
-                .lastOpenedAt(note.getLastOpenedAt())
-                .tags(tags)
-                .build();
+        return NoteDetail.from(note);
     }
 }
