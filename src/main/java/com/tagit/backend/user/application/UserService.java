@@ -48,4 +48,11 @@ public class UserService {
 
         return new AuthResponse(token, userResponse);
     }
+
+    public void updateRefreshToken(Long userId, String refreshToken) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ApiException(AuthErrorCode.USER_NOT_FOUND));
+        user.updateRefreshToken(refreshToken);
+        userRepository.save(user);
+    }
 }

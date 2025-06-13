@@ -32,4 +32,15 @@ public class User {
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Tag> tags = new HashSet<>();
+
+    @Column(length = 512)
+    private String refreshToken;
+
+    public void updateRefreshToken(String token) {
+        this.refreshToken = token;
+    }
+
+    public void clearRefreshToken() {
+        this.refreshToken = null;
+    }
 }

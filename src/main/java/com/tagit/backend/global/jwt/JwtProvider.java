@@ -12,11 +12,16 @@ public class JwtProvider {
 
     private final String secretKey;
     private final long expiration;
+    private final long refreshExpiration;
 
-    public JwtProvider(@Value("${jwt.secret}") String secretKey,
-                       @Value("${jwt.expiration}") long expiration) {
+    public JwtProvider(
+            @Value("${jwt.secret}") String secretKey,
+            @Value("${jwt.expiration}") long expiration,
+            @Value("${jwt.refresh-expiration}") long refreshExpiration
+    ) {
         this.secretKey = secretKey;
         this.expiration = expiration;
+        this.refreshExpiration = refreshExpiration;
     }
 
     public String createToken(Long userId, String nickname) {
@@ -52,5 +57,16 @@ public class JwtProvider {
                 .getBody();
 
         return Long.parseLong(claims.getSubject());
+    }
+
+    public String createRefreshToken() {
+        Date now = new Date();
+        Date expiry = new Date(now.getTime() + refreshExpiration);
+
+        return Jwts.builder()
+                .setIssuedAt(now)
+                .setExpiration(expiry)
+                .signWith(Keys.hmacShaKeyFor(secretKey.getBytes()))
+                .compact();
     }
 }

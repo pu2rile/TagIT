@@ -1,19 +1,22 @@
 package com.tagit.backend.user.presentation;
 
 import com.tagit.backend.global.dto.ApiResponse;
+import com.tagit.backend.global.exception.ApiException;
+import com.tagit.backend.global.jwt.JwtProvider;
 import com.tagit.backend.user.application.UserService;
+import com.tagit.backend.user.domain.entity.User;
+import com.tagit.backend.user.domain.repository.UserRepository;
 import com.tagit.backend.user.dto.AuthResponse;
 import com.tagit.backend.user.dto.LoginInfo;
 import com.tagit.backend.user.dto.SignupInfo;
 import com.tagit.backend.user.dto.UserResponse;
+import com.tagit.backend.user.exception.AuthErrorCode;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -21,6 +24,8 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthController {
 
     private final UserService userService;
+    private final UserRepository userRepository;
+    private final JwtProvider jwtProvider;
 
     @PostMapping("/signup")
     public ResponseEntity<ApiResponse<UserResponse>> signup(@RequestBody SignupInfo request) {
@@ -33,12 +38,39 @@ public class AuthController {
                                                            HttpServletResponse response) {
         AuthResponse authResponse = userService.login(request);
 
-        Cookie cookie = new Cookie("token", authResponse.token());
-        cookie.setHttpOnly(true);
-        cookie.setPath("/");
-        cookie.setMaxAge(24 * 60 * 60); // 1일
-        response.addCookie(cookie);
+        // 엑세스 토큰
+        Cookie accessToken = new Cookie("token", authResponse.token());
+        accessToken.setHttpOnly(true);
+        accessToken.setPath("/");
+        accessToken.setMaxAge(15 * 60); // 15분
+
+        // 리프레시 토큰
+        String refreshToken = jwtProvider.createRefreshToken();
+        Cookie refreshCookie = new Cookie("refreshToken", refreshToken);
+        refreshCookie.setHttpOnly(true);
+        refreshCookie.setPath("/");
+        refreshCookie.setMaxAge(7 * 24 * 60 * 60); // 7일
+
+        // DB에 리프레시 토큰 저장
+        userService.updateRefreshToken(authResponse.user().userId(), refreshToken);
+
+        response.addCookie(accessToken);
+        response.addCookie(refreshCookie);
 
         return ResponseEntity.ok(ApiResponse.success(authResponse.user()));
+    }
+
+    @PostMapping("/reissue")
+    public ResponseEntity<?> reissue(@CookieValue("refreshToken") String refreshToken) {
+        if (!jwtProvider.validateToken(refreshToken)) {
+            throw new ApiException(AuthErrorCode.INVALID_TOKEN);
+        }
+
+        User user = userRepository.findByRefreshToken(refreshToken)
+                .orElseThrow(() -> new ApiException(AuthErrorCode.USER_NOT_FOUND));
+
+        String newAccessToken = jwtProvider.createToken(user.getId(), user.getNickname());
+
+        return ResponseEntity.ok(newAccessToken);
     }
 }
