@@ -1,6 +1,7 @@
 package com.tagit.backend.note.domain.entity;
 
 import com.tagit.backend.noteTag.domain.entity.NoteTag;
+import com.tagit.backend.tag.domain.entity.Tag;
 import com.tagit.backend.user.domain.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
@@ -41,12 +42,20 @@ public class Note {
     @Builder
     public Note(User user, String title, String content, boolean pinned, String imgUrl) {
         this.user = user;
-        this.title = title;
+        //this.title = title;
         this.content = content;
         this.pinned = pinned;
-        this.imgUrl = this.imgUrl;
+        this.imgUrl = imgUrl;
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
         this.lastOpenedAt = LocalDateTime.now();
+    }
+
+    public void addNoteTag(Tag tag) {
+        NoteTag noteTag = NoteTag.builder()
+                .note(this)
+                .tag(tag)
+                .build();
+        this.noteTags.add(noteTag);
     }
 }

@@ -28,5 +28,10 @@ public class NoteController {
         return ResponseEntity.ok(ApiResponse.success(notes));
     }
 
+    @PostMapping
+    public ResponseEntity<ApiResponse<NoteResponse>> createNote(@AuthenticationPrincipal Long userId,
+                                                                @RequestBody NoteInfo noteInfo) {
+        NoteResponse response = noteService.createNote(userId, noteInfo);
+        return ResponseEntity.ok(ApiResponse.success(response));
     }
 }
