@@ -58,4 +58,23 @@ public class Note {
                 .build();
         this.noteTags.add(noteTag);
     }
+
+    public void updateContent(String content) {
+        this.content = content;
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    public void updatePinned(boolean pinned) {
+        this.pinned = pinned;
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    public void updateImgUrl(String imgUrl) {
+        this.imgUrl = imgUrl;
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    public void clearNoteTags() {
+        this.noteTags.clear();
+    }
 }

@@ -89,4 +89,41 @@ public class NoteService {
 
         return NoteDetail.from(note);
     }
+
+    @Transactional
+    public NoteDetail updateNote(Long userId, Long noteId, NoteInfo info) {
+        Note note = noteRepository.findByIdAndUserId(noteId, userId)
+                .orElseThrow(() -> new ApiException(NoteErrorCode.NOTE_NOT_FOUND));
+
+        // note.updateTitle(info.title());
+        note.updateContent(info.content());
+        note.updatePinned(info.pinned());
+        note.updateImgUrl(null);
+
+        note.clearNoteTags();
+
+        // 새 태그 연결
+        if (info.tagIds() != null) {
+            info.tagIds().forEach(tagId -> {
+                Tag tag = tagRepository.findById(tagId)
+                        .orElseThrow(() -> new ApiException(NoteErrorCode.TAG_NOT_FOUND));
+                note.addNoteTag(tag);
+            });
+        }
+
+        List<TagInfo> tagInfos = note.getNoteTags().stream()
+                .map(nt -> TagInfo.from(nt.getTag()))
+                .toList();
+
+        return NoteDetail.builder()
+                .id(note.getId())
+                //.title(note.getTitle())
+                .content(note.getContent())
+                .pinned(note.isPinned())
+                .createdAt(note.getCreatedAt())
+                .updatedAt(note.getUpdatedAt())
+                .lastOpenedAt(note.getLastOpenedAt())
+                .tags(tagInfos)
+                .build();
+    }
 }
