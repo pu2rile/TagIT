@@ -57,6 +57,7 @@ public class Note {
                 .tag(tag)
                 .build();
         this.noteTags.add(noteTag);
+        tag.getNoteTags().add(noteTag);
     }
 
     public void updateContent(String content) {
