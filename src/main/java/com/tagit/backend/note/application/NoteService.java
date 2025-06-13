@@ -5,6 +5,7 @@ import com.tagit.backend.note.domain.entity.Note;
 import com.tagit.backend.note.domain.repository.NoteRepository;
 import com.tagit.backend.note.dto.NoteDetail;
 import com.tagit.backend.note.dto.NoteInfo;
+import com.tagit.backend.note.dto.NotePinResponse;
 import com.tagit.backend.note.dto.NoteResponse;
 import com.tagit.backend.tag.domain.entity.Tag;
 import com.tagit.backend.tag.domain.repository.TagRepository;
@@ -100,10 +101,10 @@ public class NoteService {
         note.updatePinned(info.pinned());
         note.updateImgUrl(null);
 
-        note.clearNoteTags();
-
-        // 새 태그 연결
+        // 태그가 전달된 경우에만 기존 태그 삭제 후 새로 연결
         if (info.tagIds() != null) {
+            note.clearNoteTags();
+
             info.tagIds().forEach(tagId -> {
                 Tag tag = tagRepository.findById(tagId)
                         .orElseThrow(() -> new ApiException(NoteErrorCode.TAG_NOT_FOUND));
@@ -125,5 +126,15 @@ public class NoteService {
                 .lastOpenedAt(note.getLastOpenedAt())
                 .tags(tagInfos)
                 .build();
+    }
+
+    @Transactional
+    public NotePinResponse updatePinned(Long userId, Long noteId, boolean pinned) {
+        Note note = noteRepository.findByIdAndUserId(noteId, userId)
+                .orElseThrow(() -> new ApiException(NoteErrorCode.NOTE_NOT_FOUND));
+
+        note.updatePinned(pinned);
+
+        return new NotePinResponse(note.getId(), note.isPinned());
     }
 }

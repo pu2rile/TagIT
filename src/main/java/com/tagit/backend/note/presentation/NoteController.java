@@ -2,9 +2,7 @@ package com.tagit.backend.note.presentation;
 
 import com.tagit.backend.global.dto.ApiResponse;
 import com.tagit.backend.note.application.NoteService;
-import com.tagit.backend.note.dto.NoteDetail;
-import com.tagit.backend.note.dto.NoteInfo;
-import com.tagit.backend.note.dto.NoteResponse;
+import com.tagit.backend.note.dto.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
@@ -53,5 +51,15 @@ public class NoteController {
     ) {
         NoteDetail response = noteService.updateNote(userId, noteId, request);
         return ResponseEntity.ok(ApiResponse.success(response));
+    }
+
+    @PatchMapping("/{noteId}/pin")
+    public ResponseEntity<ApiResponse<NotePinResponse>> updatePinned(
+            @AuthenticationPrincipal Long userId,
+            @PathVariable Long noteId,
+            @RequestBody NotePinInfo request
+    ) {
+        NotePinResponse result = noteService.updatePinned(userId, noteId, request.pinned());
+        return ResponseEntity.ok(ApiResponse.success(result));
     }
 }
