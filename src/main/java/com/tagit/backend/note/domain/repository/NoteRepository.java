@@ -2,9 +2,9 @@ package com.tagit.backend.note.domain.repository;
 
 import com.tagit.backend.note.domain.entity.Note;
 import org.springframework.data.jpa.repository.JpaRepository;
-
-import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 public interface NoteRepository extends JpaRepository<Note, Long> {
-    List<Note> findByUserId(Long userId);
+    Page<Note> findByUserId(Long userId, Pageable pageable);
 }

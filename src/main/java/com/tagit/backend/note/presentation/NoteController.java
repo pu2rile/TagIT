@@ -2,14 +2,14 @@ package com.tagit.backend.note.presentation;
 
 import com.tagit.backend.global.dto.ApiResponse;
 import com.tagit.backend.note.application.NoteService;
+import com.tagit.backend.note.dto.NoteInfo;
 import com.tagit.backend.note.dto.NoteResponse;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.data.domain.Page;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -18,8 +18,15 @@ public class NoteController {
     private final NoteService noteService;
 
     @GetMapping
-    public ApiResponse<List<NoteResponse>> getNotesByUser(@RequestParam Long userId) {
-        List<NoteResponse> noteResponses = noteService.getNotesByUser(userId);
-        return ApiResponse.success(noteResponses);
+    public ResponseEntity<ApiResponse<Page<NoteResponse>>> getNotesByUser(
+            @AuthenticationPrincipal Long userId,
+            @RequestParam(defaultValue = "recent") String sort,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        Page<NoteResponse> notes = noteService.getNotesByUser(userId, sort, page, size);
+        return ResponseEntity.ok(ApiResponse.success(notes));
+    }
+
     }
 }
