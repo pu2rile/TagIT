@@ -1,5 +1,6 @@
 package com.tagit.backend.note.application;
 
+import com.tagit.backend.global.exception.ApiException;
 import com.tagit.backend.note.domain.entity.Note;
 import com.tagit.backend.note.domain.repository.NoteRepository;
 import com.tagit.backend.note.dto.NoteInfo;
@@ -7,15 +8,16 @@ import com.tagit.backend.note.dto.NoteResponse;
 import com.tagit.backend.tag.domain.entity.Tag;
 import com.tagit.backend.tag.domain.repository.TagRepository;
 import com.tagit.backend.tag.dto.TagInfo;
+import com.tagit.backend.tag.exception.NoteErrorCode;
 import com.tagit.backend.user.domain.entity.User;
 import com.tagit.backend.user.domain.repository.UserRepository;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -37,7 +39,7 @@ public class NoteService {
     @Transactional
     public NoteResponse createNote(Long userId, NoteInfo info) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("유저를 찾을 수 없습니다."));
+                .orElseThrow(() -> new ApiException(NoteErrorCode.USER_NOT_FOUND));
 
         Note note = Note.builder()
                 .user(user)
@@ -49,11 +51,10 @@ public class NoteService {
 
         noteRepository.save(note);
 
-        // 태그 연결
         if (info.tagIds() != null) {
             info.tagIds().forEach(tagId -> {
                 Tag tag = tagRepository.findById(tagId)
-                        .orElseThrow(() -> new IllegalArgumentException("태그를 찾을 수 없습니다."));
+                        .orElseThrow(() -> new ApiException(NoteErrorCode.TAG_NOT_FOUND));
                 note.addNoteTag(tag);
             });
         }
@@ -76,5 +77,27 @@ public class NoteService {
                 note.getLastOpenedAt(),
                 tagInfos
         );
+    }
+
+    @Transactional(readOnly = true)
+    public NoteResponse getNoteById(Long userId, Long noteId) {
+        Note note = noteRepository.findByIdAndUserId(noteId, userId)
+                .orElseThrow(() -> new ApiException(NoteErrorCode.NOTE_NOT_FOUND));
+
+        List<TagInfo> tags = note.getNoteTags().stream()
+                .map(nt -> TagInfo.from(nt.getTag()))
+                .toList();
+
+        return NoteResponse.builder()
+                .id(note.getId())
+                //.title(note.getTitle())
+                .content(note.getContent())
+                .pinned(note.isPinned())
+                .imageUrl(note.getImgUrl())
+                .createdAt(note.getCreatedAt())
+                .updatedAt(note.getUpdatedAt())
+                .lastOpenedAt(note.getLastOpenedAt())
+                .tags(tags)
+                .build();
     }
 }

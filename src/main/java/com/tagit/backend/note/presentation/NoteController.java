@@ -34,4 +34,13 @@ public class NoteController {
         NoteResponse response = noteService.createNote(userId, noteInfo);
         return ResponseEntity.ok(ApiResponse.success(response));
     }
+
+    @GetMapping("/{noteId}")
+    public ResponseEntity<ApiResponse<NoteResponse>> getNoteById(
+            @AuthenticationPrincipal Long userId,
+            @PathVariable Long noteId
+    ) {
+        NoteResponse response = noteService.getNoteById(userId, noteId);
+        return ResponseEntity.ok(ApiResponse.success(response));
+    }
 }
