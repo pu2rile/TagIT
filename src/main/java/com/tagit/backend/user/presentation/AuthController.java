@@ -38,24 +38,20 @@ public class AuthController {
                                                            HttpServletResponse response) {
         AuthResponse authResponse = userService.login(request);
 
-        // 엑세스 토큰
-        Cookie accessToken = new Cookie("token", authResponse.token());
-        accessToken.setHttpOnly(true);
-        accessToken.setPath("/");
-        accessToken.setMaxAge(15 * 60); // 15분
+        // 엑세스 토큰 쿠키
+        Cookie accessTokenCookie = new Cookie("token", authResponse.accessToken());
+        accessTokenCookie.setHttpOnly(true);
+        accessTokenCookie.setPath("/");
+        accessTokenCookie.setMaxAge(15 * 60); // 15분
 
-        // 리프레시 토큰
-        String refreshToken = jwtProvider.createRefreshToken();
-        Cookie refreshCookie = new Cookie("refreshToken", refreshToken);
-        refreshCookie.setHttpOnly(true);
-        refreshCookie.setPath("/");
-        refreshCookie.setMaxAge(7 * 24 * 60 * 60); // 7일
+        // 리프레시 토큰 쿠키
+        Cookie refreshTokenCookie = new Cookie("refreshToken", authResponse.refreshToken());
+        refreshTokenCookie.setHttpOnly(true);
+        refreshTokenCookie.setPath("/");
+        refreshTokenCookie.setMaxAge(7 * 24 * 60 * 60); // 7일
 
-        // DB에 리프레시 토큰 저장
-        userService.updateRefreshToken(authResponse.user().userId(), refreshToken);
-
-        response.addCookie(accessToken);
-        response.addCookie(refreshCookie);
+        response.addCookie(accessTokenCookie);
+        response.addCookie(refreshTokenCookie);
 
         return ResponseEntity.ok(ApiResponse.success(authResponse.user()));
     }

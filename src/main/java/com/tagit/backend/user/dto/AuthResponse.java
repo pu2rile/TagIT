@@ -1,6 +1,7 @@
 package com.tagit.backend.user.dto;
 
 public record AuthResponse(
-        String token,
+        String accessToken,
+        String refreshToken,
         UserResponse user
 ) {}

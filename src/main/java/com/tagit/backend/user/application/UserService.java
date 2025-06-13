@@ -43,10 +43,14 @@ public class UserService {
             throw new ApiException(AuthErrorCode.INVALID_PASSWORD);
         }
 
-        String token = jwtProvider.createToken(user.getId(), user.getNickname());
-        UserResponse userResponse = new UserResponse(user.getId(), user.getNickname());
+        String accessToken = jwtProvider.createToken(user.getId(), user.getNickname());
+        String refreshToken = jwtProvider.createRefreshToken();
 
-        return new AuthResponse(token, userResponse);
+        user.updateRefreshToken(refreshToken);
+        userRepository.save(user);
+
+        UserResponse userResponse = new UserResponse(user.getId(), user.getNickname());
+        return new AuthResponse(accessToken, refreshToken, userResponse);
     }
 
     public void updateRefreshToken(Long userId, String refreshToken) {
