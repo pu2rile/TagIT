@@ -44,4 +44,14 @@ public class NoteController {
         NoteDetail response = noteService.getNoteById(userId, noteId);
         return ResponseEntity.ok(ApiResponse.success(response));
     }
+
+    @PutMapping("/{noteId}")
+    public ResponseEntity<ApiResponse<NoteDetail>> updateNote(
+            @AuthenticationPrincipal Long userId,
+            @PathVariable Long noteId,
+            @RequestBody NoteInfo request
+    ) {
+        NoteDetail response = noteService.updateNote(userId, noteId, request);
+        return ResponseEntity.ok(ApiResponse.success(response));
+    }
 }
