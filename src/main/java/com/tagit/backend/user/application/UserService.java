@@ -1,5 +1,6 @@
 package com.tagit.backend.user.application;
 
+import com.tagit.backend.global.exception.ApiException;
 import com.tagit.backend.global.jwt.JwtProvider;
 import com.tagit.backend.user.domain.entity.User;
 import com.tagit.backend.user.domain.repository.UserRepository;
@@ -7,6 +8,7 @@ import com.tagit.backend.user.dto.AuthResponse;
 import com.tagit.backend.user.dto.LoginInfo;
 import com.tagit.backend.user.dto.SignupInfo;
 import com.tagit.backend.user.dto.UserResponse;
+import com.tagit.backend.user.exception.AuthErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -21,7 +23,7 @@ public class UserService {
 
     public UserResponse signup(SignupInfo request) {
         if (userRepository.existsByNickname(request.nickname())) {
-            throw new RuntimeException("이미 존재하는 닉네임입니다.");
+            throw new ApiException(AuthErrorCode.ALREADY_EXIST_NICKNAME);
         }
 
         User user = User.builder()
@@ -35,10 +37,10 @@ public class UserService {
 
     public AuthResponse login(LoginInfo request) {
         User user = userRepository.findByNickname(request.nickname())
-                .orElseThrow(() -> new RuntimeException("존재하지 않는 사용자입니다."));
+                .orElseThrow(() -> new ApiException(AuthErrorCode.USER_NOT_FOUND));
 
         if (!passwordEncoder.matches(request.password(), user.getPassword())) {
-            throw new RuntimeException("비밀번호가 틀렸습니다.");
+            throw new ApiException(AuthErrorCode.INVALID_PASSWORD);
         }
 
         String token = jwtProvider.createToken(user.getId(), user.getNickname());
