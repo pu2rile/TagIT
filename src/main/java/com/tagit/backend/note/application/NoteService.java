@@ -32,10 +32,9 @@ public class NoteService {
     private final UserRepository userRepository;
     private final TagRepository tagRepository;
 
-    public NoteResponse getNotesByUser(Long userId, String sort, int page, int size) {
-        Sort.Direction direction = sort.equals("old") ? Sort.Direction.ASC : Sort.Direction.DESC;
-        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, "createdAt"));
-        Page<Note> notes = noteRepository.findByUserId(userId, pageable);
+    public NoteResponse getNotesByUser(Long userId, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size); // Sort 제거
+        Page<Note> notes = noteRepository.findNoteByUserId(userId, pageable);
 
         List<NoteInfo> noteInfos = notes.stream()
                 .map(NoteInfo::from)

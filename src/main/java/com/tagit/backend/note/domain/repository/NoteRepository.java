@@ -8,6 +8,6 @@ import org.springframework.data.domain.Pageable;
 import java.util.Optional;
 
 public interface NoteRepository extends JpaRepository<Note, Long> {
-    Page<Note> findByUserId(Long userId, Pageable pageable);
+    Page<Note> findNoteByUserId(Long userId, Pageable pageable);
     Optional<Note> findByIdAndUserId(Long noteId, Long userId);
 }

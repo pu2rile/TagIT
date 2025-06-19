@@ -23,7 +23,7 @@ public class NoteController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
     ) {
-        NoteResponse notes = noteService.getNotesByUser(userId, sort, page, size);
+        NoteResponse notes = noteService.getNotesByUser(userId, page, size);
         return ResponseEntity.ok(ApiResponse.success(notes));
     }
 
