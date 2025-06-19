@@ -17,13 +17,13 @@ public class NoteController {
     private final NoteService noteService;
 
     @GetMapping
-    public ResponseEntity<ApiResponse<Page<NoteResponse>>> getNotesByUser(
+    public ResponseEntity<ApiResponse<NoteResponse>> getNotesByUser(
             @AuthenticationPrincipal Long userId,
             @RequestParam(defaultValue = "recent") String sort,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
     ) {
-        Page<NoteResponse> notes = noteService.getNotesByUser(userId, sort, page, size);
+        NoteResponse notes = noteService.getNotesByUser(userId, sort, page, size);
         return ResponseEntity.ok(ApiResponse.success(notes));
     }
 
