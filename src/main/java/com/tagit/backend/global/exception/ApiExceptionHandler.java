@@ -14,13 +14,13 @@ public class ApiExceptionHandler {
         ErrorCode errorCode = ex.getErrorCode();
         return ResponseEntity
                 .status(errorCode.getHttpStatus())
-                .body(ApiResponse.failure(errorCode.getErrorCode(),errorCode.getMessage()));
+                .body(ApiResponse.failure(errorCode.getErrorCode(), errorCode.getMessage()));
     }
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponse<Void>> handleGeneralException(Exception ex) {
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(ApiResponse.failure("INTERNAL_SERVER_ERROR", "An unexpected error occurred"));
+                .body(ApiResponse.fail("서버 내부 오류가 발생했습니다."));
     }
 }
