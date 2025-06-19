@@ -137,4 +137,12 @@ public class NoteService {
 
         return new NotePinResponse(note.getId(), note.isPinned());
     }
+
+    @Transactional
+    public void deleteNote(Long userId, Long noteId) {
+        Note note = noteRepository.findByIdAndUserId(noteId, userId)
+                .orElseThrow(() -> new ApiException(NoteErrorCode.NOTE_NOT_FOUND));
+
+        noteRepository.delete(note);
+    }
 }

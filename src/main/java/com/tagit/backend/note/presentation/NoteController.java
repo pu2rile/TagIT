@@ -62,4 +62,13 @@ public class NoteController {
         NotePinResponse result = noteService.updatePinned(userId, noteId, request.pinned());
         return ResponseEntity.ok(ApiResponse.success(result));
     }
+
+    @DeleteMapping("/{noteId}")
+    public ResponseEntity<ApiResponse<Void>> deleteNote(
+            @AuthenticationPrincipal Long userId,
+            @PathVariable Long noteId
+    ) {
+        noteService.deleteNote(userId, noteId);
+        return ResponseEntity.ok(ApiResponse.success(null));
+    }
 }
