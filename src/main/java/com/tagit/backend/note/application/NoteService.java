@@ -1,5 +1,6 @@
 package com.tagit.backend.note.application;
 
+import com.tagit.backend.global.dto.PageInfo;
 import com.tagit.backend.global.exception.ApiException;
 import com.tagit.backend.note.domain.entity.Note;
 import com.tagit.backend.note.domain.repository.NoteRepository;
@@ -31,11 +32,18 @@ public class NoteService {
     private final UserRepository userRepository;
     private final TagRepository tagRepository;
 
-    public Page<NoteResponse> getNotesByUser(Long userId, String sort, int page, int size) {
+    public NoteResponse getNotesByUser(Long userId, String sort, int page, int size) {
         Sort.Direction direction = sort.equals("old") ? Sort.Direction.ASC : Sort.Direction.DESC;
         Pageable pageable = PageRequest.of(page, size, Sort.by(direction, "createdAt"));
-        return noteRepository.findByUserId(userId, pageable)
-                .map(NoteResponse::from);
+        Page<Note> notes = noteRepository.findByUserId(userId, pageable);
+
+        List<NoteInfo> noteInfos = notes.stream()
+                .map(NoteInfo::from)
+                .toList();
+
+        PageInfo pageInfo = PageInfo.of(notes.getNumber(), notes.getTotalPages());
+
+        return NoteResponse.of(noteInfos, pageInfo);
     }
 
     @Transactional
@@ -45,7 +53,6 @@ public class NoteService {
 
         Note note = Note.builder()
                 .user(user)
-                //.title(info.title())
                 .content(info.content())
                 .pinned(info.pinned())
                 .imgUrl(null)
@@ -53,29 +60,17 @@ public class NoteService {
 
         noteRepository.save(note);
 
-        if (info.tagIds() != null) {
-            info.tagIds().forEach(tagId -> {
-                Tag tag = tagRepository.findById(tagId)
+        if (info.tagInfos() != null) {
+            info.tagInfos().forEach(tagInfo -> {
+                Tag tag = tagRepository.findById(tagInfo.tagId())
                         .orElseThrow(() -> new ApiException(NoteErrorCode.TAG_NOT_FOUND));
                 note.addNoteTag(tag);
             });
         }
 
-        List<TagInfo> tagInfos = note.getNoteTags().stream()
-                .map(noteTag -> {
-                    Tag tag = noteTag.getTag();
-                    return new TagInfo(tag.getTagId(), tag.getName(), tag.getColor());
-                })
-                .toList();
-
-        return new NoteResponse(
-                note.getId(),
-                //note.getTitle(),
-                note.getContent(),
-                note.isPinned(),
-                note.getCreatedAt(),
-                note.getUpdatedAt(),
-                note.getLastOpenedAt()
+        return NoteResponse.of(
+                List.of(NoteInfo.from(note)),
+                PageInfo.of(0, 1)
         );
     }
 
@@ -102,11 +97,11 @@ public class NoteService {
         note.updateImgUrl(null);
 
         // 태그가 전달된 경우에만 기존 태그 삭제 후 새로 연결
-        if (info.tagIds() != null) {
+        if (info.tagInfos() != null) {
             note.clearNoteTags();
 
-            info.tagIds().forEach(tagId -> {
-                Tag tag = tagRepository.findById(tagId)
+            info.tagInfos().forEach(tagInfo -> {
+                Tag tag = tagRepository.findById(tagInfo.tagId())
                         .orElseThrow(() -> new ApiException(NoteErrorCode.TAG_NOT_FOUND));
                 note.addNoteTag(tag);
             });
